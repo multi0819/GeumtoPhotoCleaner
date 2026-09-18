@@ -9,7 +9,7 @@ object PhotoRules {
     private const val GEUMTO_MIN_LAT = 37.40203
     private const val GEUMTO_MAX_LAT = 37.42203
     private const val GEUMTO_MIN_LON = 127.06225
-    private const val GEUMTO_MAX_LON = 127.08225
+    private const val GEUMTO_MAX_LON = 127.10500
 
     fun startOfTodayMillis(nowMillis: Long, zoneId: ZoneId): Long =
         Instant.ofEpochMilli(nowMillis).atZone(zoneId).toLocalDate().atStartOfDay(zoneId).toInstant().toEpochMilli()

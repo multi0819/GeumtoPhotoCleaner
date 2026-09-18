@@ -11,6 +11,11 @@ class PhotoRulesTest {
     }
 
     @Test
+    fun `판교 제2테크노밸리 동쪽 금토동 좌표도 찾는다`() {
+        assertTrue(PhotoRules.isWithinGeumtoArea(37.4088884, 127.1001891))
+    }
+
+    @Test
     fun `수정구이지만 금토동에서 벗어난 좌표는 제외한다`() {
         assertFalse(PhotoRules.isWithinGeumtoArea(37.44680, 127.13890))
     }
