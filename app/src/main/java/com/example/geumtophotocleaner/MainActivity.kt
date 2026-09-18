@@ -28,13 +28,6 @@ class MainActivity : AppCompatActivity() {
     private lateinit var status: TextView
     private lateinit var progress: ProgressBar
 
-    private val permissions = registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) {
-        when (currentMediaAccess()) {
-            MediaAccess.FULL -> runScan()
-            MediaAccess.PARTIAL -> showFullAccessDialog()
-            MediaAccess.DENIED -> status.text = "사진 접근 권한이 필요합니다."
-        }
-    }
     private val deleteResult = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { r ->
         if (r.resultCode == Activity.RESULT_OK) { status.text = "삭제가 완료되었습니다."; runScan() }
         else status.text = "삭제가 취소되었습니다."
@@ -54,7 +47,7 @@ class MainActivity : AppCompatActivity() {
         when (currentMediaAccess()) {
             MediaAccess.FULL -> runScan()
             MediaAccess.PARTIAL -> showFullAccessDialog()
-            MediaAccess.DENIED -> permissions.launch(requiredMediaPermissions())
+            MediaAccess.DENIED -> showFullAccessDialog()
         }
     }
 
@@ -70,20 +63,11 @@ class MainActivity : AppCompatActivity() {
         return PhotoAccess.resolve(fullGranted, partialGranted)
     }
 
-    private fun requiredMediaPermissions(): Array<String> = when {
-        Build.VERSION.SDK_INT >= 34 -> arrayOf(
-            Manifest.permission.READ_MEDIA_IMAGES,
-            Manifest.permission.READ_MEDIA_VISUAL_USER_SELECTED
-        )
-        Build.VERSION.SDK_INT >= 33 -> arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
-        else -> arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
-    }
-
     private fun showFullAccessDialog() {
-        status.text = "선택한 사진만 허용되어 있습니다."
+        status.text = "전체 사진 권한을 확인해 주세요."
         AlertDialog.Builder(this)
             .setTitle("모든 사진 허용 필요")
-            .setMessage("금토동 사진을 자동으로 찾으려면 사진 및 동영상 권한을 '항상 모두 허용'으로 설정해 주세요.")
+            .setMessage("사진 선택창은 열지 않습니다. 설정에서 사진 및 동영상 권한을 '항상 모두 허용'으로 확인한 뒤 앱으로 돌아와 사진 찾기를 다시 눌러 주세요.")
             .setNegativeButton("취소", null)
             .setPositiveButton("설정 열기") { _, _ ->
                 startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
