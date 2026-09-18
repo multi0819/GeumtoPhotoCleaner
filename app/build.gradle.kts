@@ -25,4 +25,5 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.10.1")
     implementation("androidx.recyclerview:recyclerview:1.4.0")
     implementation("androidx.exifinterface:exifinterface:1.4.0")
+    testImplementation("junit:junit:4.13.2")
 }
