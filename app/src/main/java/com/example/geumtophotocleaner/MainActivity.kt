@@ -28,6 +28,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var status: TextView
     private lateinit var progress: ProgressBar
 
+    private val locationPermission = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) ensurePermissionAndScan()
+        else {
+            status.text = "사진 위치정보 권한이 필요합니다."
+            AlertDialog.Builder(this)
+                .setTitle("사진 위치정보 허용 필요")
+                .setMessage("금토동 사진을 찾으려면 사진에 저장된 위치정보 접근을 허용해야 합니다. 설정에서 권한을 확인한 뒤 사진 찾기를 다시 눌러 주세요.")
+                .setNegativeButton("취소", null)
+                .setPositiveButton("설정 열기") { _, _ ->
+                    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$packageName")))
+                }.show()
+        }
+    }
+
     private val deleteResult = registerForActivityResult(ActivityResultContracts.StartIntentSenderForResult()) { r ->
         if (r.resultCode == Activity.RESULT_OK) { status.text = "삭제가 완료되었습니다."; runScan() }
         else status.text = "삭제가 취소되었습니다."
@@ -45,7 +59,13 @@ class MainActivity : AppCompatActivity() {
 
     private fun ensurePermissionAndScan() {
         when (currentMediaAccess()) {
-            MediaAccess.FULL -> runScan()
+            MediaAccess.FULL -> {
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_MEDIA_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    runScan()
+                } else {
+                    locationPermission.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+                }
+            }
             MediaAccess.PARTIAL -> showFullAccessDialog()
             MediaAccess.DENIED -> showFullAccessDialog()
         }
@@ -78,8 +98,15 @@ class MainActivity : AppCompatActivity() {
     private fun runScan() {
         progress.visibility = View.VISIBLE; status.text = "금토동 사진을 확인하는 중…"
         thread {
+            try {
             val found = PhotoScanner(this).scan { n -> runOnUiThread { status.text = "사진 ${n}장 확인 중…" } }
             runOnUiThread { items.clear(); items.addAll(found); adapter.notifyDataSetChanged(); progress.visibility = View.GONE; status.text = "어제까지 촬영한 금토동 사진 ${items.size}장을 찾았습니다." }
+            } catch (_: Exception) {
+                runOnUiThread {
+                    progress.visibility = View.GONE
+                    status.text = "사진을 읽지 못했습니다. 사진 및 위치정보 권한을 확인한 뒤 다시 시도해 주세요."
+                }
+            }
         }
     }
 

@@ -23,7 +23,7 @@ class PhotoScanner(private val context: Context) {
                 val uri = ContentUris.withAppendedId(collection, c.getLong(idCol))
                 val taken = c.getLong(dateCol)
                 val latLong = try {
-                    resolver.openFileDescriptor(uri, "r")?.use { pfd -> ExifInterface(pfd.fileDescriptor).latLong }
+                    resolver.openFileDescriptor(MediaStore.setRequireOriginal(uri), "r")?.use { pfd -> ExifInterface(pfd.fileDescriptor).latLong }
                 } catch (_: Exception) { null }
                 if (latLong == null) continue
                 val lat = latLong[0]; val lon = latLong[1]
